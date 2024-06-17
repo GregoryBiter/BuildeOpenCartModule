@@ -1,3 +1,3 @@
 @echo off
-
-php build-ocmod.php %*
+SETLOCAL
+php "%~dp0build-ocmod.php" %*

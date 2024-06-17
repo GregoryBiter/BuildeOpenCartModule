@@ -1,10 +1,18 @@
 <?php
-define("FILE_TXT_BUILD", "build/build-ocmod.txt");
-define("ZIP_PATH_BUILD", "build/");
-define("OCMOD_FILE", "build/install.xml");
-define("OCMOD_ZIP_FILE", "install.xml");
-define("BASE_DIR_BUILD_UPLOAD", __DIR__ . "/build/upload");
-define("BASE_DIR_BUILD_ZIP", __DIR__ . "/build");
+$consolePath = getenv('PWD');
+
+// Если 'PWD' не задан, используем 'getcwd'
+if ($consolePath === false) {
+    $consolePath = getcwd();
+}
+define("WORK_CATALOG", $consolePath);
+define("FILE_TXT_BUILD", WORK_CATALOG."/build/build-ocmod.txt");
+define("ZIP_PATH_BUILD",  WORK_CATALOG."/build/");
+define("OCMOD_FILE", WORK_CATALOG."/build/install.xml");
+define("OCMOD_ZIP_FILE", WORK_CATALOG."/install.xml");
+define("BASE_DIR_BUILD_UPLOAD", WORK_CATALOG. "/build/upload");
+define("BASE_DIR_BUILD_ZIP", WORK_CATALOG."/build");
+
 
 class File extends Factory
 {
@@ -27,7 +35,7 @@ class File extends Factory
     }
 
 
-    public function copyFilesWithPattern($pattern, $baseDir, $sourse = __DIR__, $des = null)
+    public function copyFilesWithPattern($pattern, $baseDir, $sourse = WORK_CATALOG, $des = null)
     {
         $items = glob($pattern, GLOB_BRACE);
         foreach ($items as $item) {
@@ -60,7 +68,7 @@ class File extends Factory
     {
         foreach ($fileList as $file) {
             $file = ltrim($file, '/\\');
-            $fullPath = __DIR__ . '/' . $file;
+            $fullPath = WORK_CATALOG . '/' . $file;
             if (strpos($file, '*') !== false) {
                 $this->deleteFilesWithPattern($fullPath);
             } else {
@@ -108,7 +116,7 @@ class File extends Factory
         }
         // Удаляем пустые родительские директории
         $dir = dirname($file);
-        while ($dir !== __DIR__ && is_dir($dir) && count(glob("$dir/*")) === 0) {
+        while ($dir !== WORK_CATALOG && is_dir($dir) && count(glob("$dir/*")) === 0) {
             rmdir($dir);
             echo "Пустая директория $dir удалена\n";
             $dir = dirname($dir);
@@ -152,7 +160,7 @@ class Console extends Factory
         $fileList = $this->Ocbuild->readBuildFile(FILE_TXT_BUILD);
         $nameModule = $this->Ocbuild->getModuleName($fileList);
         $this->File->deleteListFile($fileList);
-        if (is_file(__DIR__ . "/" . OCMOD_FILE) && is_file($this->Ocbuild->getNameOcmod($nameModule))) {
+        if (is_file(WORK_CATALOG . "/" . OCMOD_FILE) && is_file($this->Ocbuild->getNameOcmod($nameModule))) {
             $this->File->deleteFiles($this->Ocbuild->getNameOcmod($nameModule));
             //deleteFiles(getNameOcmod($nameModule));
         }
@@ -166,23 +174,23 @@ class Console extends Factory
         foreach ($fileList as $file) {
             $file = ltrim($file, '/\\');
             $fullPath = BASE_DIR_BUILD_UPLOAD . '/' . $file;
-            //$fullPath = __DIR__ . '/' . $file;
+            //$fullPath = WORK_CATALOG . '/' . $file;
             if (strpos($file, '*') !== false) {
                 // Если путь содержит подстановочный знак, используем glob для копирования соответствующих файлов и папок
-                $this->File->copyFilesWithPattern($fullPath, __DIR__, BASE_DIR_BUILD_UPLOAD);
+                $this->File->copyFilesWithPattern($fullPath, WORK_CATALOG, BASE_DIR_BUILD_UPLOAD);
             } else {
-                $destination = __DIR__ . '/' . $file;
+                $destination = WORK_CATALOG . '/' . $file;
                 $this->File->copyFiles($fullPath, $destination);
             }
         }
-        if (is_file(__DIR__ . "/" . OCMOD_FILE)) {
-            $this->File->copyFiles(__DIR__ . "/" . OCMOD_FILE, __DIR__ . "/system/" . strtolower($nameModule) . ".ocmod.xml");
+        if (is_file(WORK_CATALOG . "/" . OCMOD_FILE)) {
+            $this->File->copyFiles(WORK_CATALOG . "/" . OCMOD_FILE, WORK_CATALOG . "/system/" . strtolower($nameModule) . ".ocmod.xml");
         }
     }
 
     public function init($argv)
     {
-        if (is_file(__DIR__ . "/" . FILE_TXT_BUILD)) {
+        if (is_file(WORK_CATALOG . "/" . FILE_TXT_BUILD)) {
             echo "Модуль вже існує. Якщо ви хочете створити новий. Видаліть всі файли із папки: " . BASE_DIR_BUILD_UPLOAD;
             exit;
         }
@@ -224,7 +232,7 @@ class Console extends Factory
 
         foreach ($fileList as $file) {
             $file = ltrim($file, '/');
-            $fullPath = __DIR__ . '/' . $file;
+            $fullPath = WORK_CATALOG . '/' . $file;
             if (strpos($file, '*') !== false) {
                 // Если путь содержит подстановочный знак, используем glob для копирования соответствующих файлов и папок
                 $this->File->copyFilesWithPattern($fullPath, BASE_DIR_BUILD_UPLOAD);
@@ -271,7 +279,7 @@ class OpencartBuild extends Factory
 {
     public function getNameOcmod($nameModule)
     {
-        return __DIR__ . "/system/" . strtolower($nameModule) . ".ocmod.xml";
+        return WORK_CATALOG . "/system/" . strtolower($nameModule) . ".ocmod.xml";
     }
 
     function readBuildFile($file)
@@ -334,7 +342,8 @@ class OpencartBuild extends Factory
         }
     }
 }
-
+echo 1;
+	 echo $currentWorkingDirectory = getcwd();
 $registry = new Registry;
 $file = new File($registry);
 $buildHelper = new OpencartBuild($registry);
