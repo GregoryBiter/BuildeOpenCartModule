@@ -145,14 +145,18 @@ class Console extends Factory
             'build',
             'init',
         ];
-
+		$this->version();
         if (count($argv) < 2 || !in_array($argv[1], $commands)) {
             echo "Команда " . ($argv[1] ?? '') . " не найдена\n";
             return;
         }
+		
         $this->{$argv[1]}($argv);
         // call_user_func($argv[1], $argv);
     }
+	public function version(){
+		echo "Ocmod Build (GbitStudio) v1.3". PHP_EOL;
+	}
     public function uninstall($argv)
     {
         echo "Start Uninstall\n";
@@ -342,8 +346,6 @@ class OpencartBuild extends Factory
         }
     }
 }
-echo 1;
-	 echo $currentWorkingDirectory = getcwd();
 $registry = new Registry;
 $file = new File($registry);
 $buildHelper = new OpencartBuild($registry);
